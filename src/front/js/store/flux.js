@@ -3,6 +3,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 		store: {
 			message: null,
 			auth: false,
+			user: "",
+			logged: false,
 			demo: [
 				{
 					title: "FIRST",
@@ -19,8 +21,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 		actions: {
 			// Use getActions to call a function within a fuction
 			login: async (email, password) => {
-
-
 				const myHeaders = new Headers();
 				myHeaders.append("Content-Type", "application/json");
 
@@ -37,39 +37,57 @@ const getState = ({ getStore, getActions, setStore }) => {
 				};
 
 				try {
-					const response = await fetch("https://potential-spork-7pvx7qxxxj9c64x-3001.app.github.dev/api/login", requestOptions);
+					const response = await fetch("https://psychic-invention-575pr4wjw4xhp4x5-3001.app.github.dev//api/login", requestOptions);
 					const result = await response.json();
-
 					if (response.status === 200) {
 						localStorage.setItem("token", result.access_token)
-						return true
+						getActions().verifyToken()
+						getActions().getPrivate()
+						setStore({ logged: true })
+					} else if (response.status === 404 || response.status === 400) {
+						setStore({ logged: false })
 					}
 				} catch (error) {
 					console.error(error);
 					return false;
 				};
 			},
-			getProfile: async () => {
+			getPrivate: async () => {
 				let token = localStorage.getItem("token")
 				try {
-					const response = await fetch("https://potential-spork-7pvx7qxxxj9c64x-3001.app.github.dev/api/profile", {
+					const response = await fetch("https://psychic-invention-575pr4wjw4xhp4x5-3001.app.github.dev//api/private", {
 						method: "GET",
 						headers: {
 							"Authorization": `Bearer ${token}`
 						},
 					});
 					const result = await response.json();
-					console.log(result)
+					setStore({ user: result.logged_in_as })
+
 				} catch (error) {
 					console.error(error);
 				};
 			},
-			tokenVerify:()=>{
-				//crear un nuevo endpoint que se llame verificacion de token
-				//la peticion en la funcion tokenVerify del front deberia actualizar un estado auth:
+			verifyToken: async () => {
+				let token = localStorage.getItem("token")
+				try {
+					const response = await fetch("https://psychic-invention-575pr4wjw4xhp4x5-3001.app.github.dev//api/verify-token", {
+						method: "GET",
+						headers: {
+							"Authorization": `Bearer ${token}`
+						},
+					});
+					const result = await response.json();
+					setStore({ auth: result.valid })
+				} catch (error) {
+					console.error(error);
+				};
 			},
-			logout:()=>{
+			logout: () => {
 				//borrar el token del localStorage
+				localStorage.removeItem("token")
+				setStore({ logged: false })
+				getActions().verifyToken()
 			},
 			getMessage: async () => {
 				try {

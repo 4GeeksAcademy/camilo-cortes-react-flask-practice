@@ -1,17 +1,14 @@
-import React, { useContext, useEffect } from "react";
-import { Context } from "../store/appContext";
+import React from "react";
+import { Favorite } from "../component/favorite";
 
 export const Profile = () => {
-    const { store, actions } = useContext(Context);
-
-
-    useEffect(()=>{
-        actions.getProfile()
-    },[])
 
     return (
         <div className="text-center mt-5">
             <h1>Profile</h1>
+            <div className="d-flex justify-content-center">
+                <Favorite />
+            </div>
         </div>
     );
 };
